@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LibraryMS – Admin Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1a56db; --blue-light: #e8effd; --blue-dark: #1240a8;
+    --red: #e63946; --red-light: #fdecea;
+    --green: #16a34a; --green-light: #dcfce7;
+    --orange: #f59e0b; --orange-light: #fef3c7;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+    --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    --white: #ffffff; --sidebar-w: 220px; --header-h: 56px;
+    --radius: 8px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+    --shadow: 0 1px 4px rgba(0,0,0,.10);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.10);
+    --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+
+  body { font-family: var(--font); background: var(--gray-50); color: var(--gray-800); font-size: 14px; line-height: 1.5; }
+
+  .shell { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { width: var(--sidebar-w); background: var(--white); border-right: 1px solid var(--gray-200); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sidebar-brand { padding: 18px 20px 14px; border-bottom: 1px solid var(--gray-100); }
+  .sidebar-logo { font-weight: 700; font-size: 16px; color: var(--blue); letter-spacing: -.3px; }
+  .sidebar-sub { font-size: 11px; font-weight: 500; color: var(--gray-400); margin-top: 6px; }
+  .sidebar-sub span { color: var(--gray-700); font-weight: 600; }
+  .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius); cursor: pointer; color: var(--gray-600); font-weight: 500; font-size: 13.5px; transition: background .15s, color .15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--gray-100); color: var(--gray-900); }
+  .nav-item.active { background: var(--blue); color: var(--white); }
+  .nav-item svg { flex-shrink: 0; }
+  .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--gray-100); display: flex; flex-direction: column; gap: 2px; }
+  .nav-item.danger { color: var(--red); }
+  .nav-item.danger:hover { background: var(--red-light); }
+
+  /* MAIN */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* TOPBAR */
+  .topbar { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: flex-end; padding: 0 28px; gap: 14px; position: sticky; top: 0; z-index: 50; }
+  .topbar-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; background: var(--gray-100); cursor: pointer; color: var(--gray-500); transition: background .15s; }
+  .topbar-icon:hover { background: var(--gray-200); }
+  .topbar-user { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; color: var(--gray-700); cursor: pointer; }
+  .avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+  /* CONTENT */
+  .content { padding: 32px 36px; flex: 1; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--gray-900); letter-spacing: -.4px; }
+  .page-desc { font-size: 13px; color: var(--gray-500); margin-top: 3px; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: var(--radius); font-family: var(--font); font-size: 13.5px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+  .btn-primary { background: var(--blue); color: var(--white); }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-outline { background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .btn-outline:hover { background: var(--gray-50); }
+  .btn-sm { padding: 5px 12px; font-size: 12.5px; }
+  .btn-return { background: var(--blue); color: var(--white); padding: 5px 14px; font-size: 12.5px; border-radius: 6px; border: none; font-family: var(--font); font-weight: 600; cursor: pointer; }
+  .btn-return:hover { background: var(--blue-dark); }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-danger:hover { opacity: .9; }
+
+  /* STAT CARDS */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 24px; }
+  .stat-card { flex: 1; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
+  .stat-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+  .stat-icon.green { background: var(--green-light); color: var(--green); }
+  .stat-icon.orange { background: var(--orange-light); color: var(--orange); }
+  .stat-icon.red { background: var(--red-light); color: var(--red); }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; }
+  .stat-value { font-size: 24px; font-weight: 700; color: var(--gray-900); margin-top: 1px; }
+  .stat-badge { font-size: 11.5px; font-weight: 600; color: var(--red); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+  .stat-note { font-size: 11.5px; color: var(--gray-500); margin-top: 1px; }
+
+  /* SEARCH */
+  .search-wrap { position: relative; margin-bottom: 18px; }
+  .search-wrap input { width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--gray-200); border-radius: var(--radius); font-family: var(--font); font-size: 13.5px; color: var(--gray-700); background: var(--white); outline: none; transition: border-color .15s; }
+  .search-wrap input:focus { border-color: var(--blue); }
+  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); }
+
+  /* TABLE */
+  .card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--gray-50); padding: 11px 16px; text-align: left; font-size: 11.5px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--gray-200); }
+  tbody tr { border-bottom: 1px solid var(--gray-100); transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--gray-50); }
+  td { padding: 13px 16px; font-size: 13.5px; color: var(--gray-700); vertical-align: middle; }
+  .id-cell { font-family: var(--mono); font-size: 12.5px; color: var(--blue); font-weight: 500; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 600; }
+  .badge-year { background: var(--blue-light); color: var(--blue-dark); }
+  .stock-zero { color: var(--red); font-weight: 700; }
+  .stock-ok { color: var(--gray-800); }
+  .action-btns { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--gray-500); background: none; transition: background .15s, color .15s; }
+  .icon-btn:hover { background: var(--gray-100); color: var(--gray-900); }
+  .icon-btn.del:hover { background: var(--red-light); color: var(--red); }
+  .table-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--gray-100); }
+  .table-info { font-size: 12.5px; color: var(--gray-500); }
+  .pagination { display: flex; align-items: center; gap: 4px; }
+  .page-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--gray-200); background: var(--white); cursor: pointer; font-size: 13px; color: var(--gray-600); display: flex; align-items: center; justify-content: center; font-family: var(--font); font-weight: 600; transition: all .15s; }
+  .page-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .page-btn.active { background: var(--blue); border-color: var(--blue); color: var(--white); }
+
+  /* MEMBERS */
+  .member-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .loan-count { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 11.5px; font-weight: 700; }
+  .loan-count.blue { background: var(--blue); color: white; }
+  .loan-count.gray { background: var(--gray-200); color: var(--gray-600); }
+  .loan-count.orange { background: var(--orange); color: white; }
+
+  /* BORROW FORM */
+  .borrow-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+  .form-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 28px; }
+  .form-card-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+  .form-card-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 24px; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+  .form-input { width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: var(--radius); font-family: var(--font); font-size: 13.5px; color: var(--gray-700); background: var(--white); outline: none; transition: border-color .15s; }
+  .form-input:focus { border-color: var(--blue); }
+  .form-select { width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: var(--radius); font-family: var(--font); font-size: 13.5px; color: var(--gray-700); background: var(--white); outline: none; cursor: pointer; }
+  .stock-hint { margin-top: 6px; font-size: 12px; color: var(--blue); display: flex; align-items: center; gap: 5px; }
+  .form-hint { margin-top: 6px; font-size: 12px; color: var(--gray-400); }
+  .sidebar-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px; }
+  .sidebar-card-title { font-size: 13px; font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 7px; margin-bottom: 14px; }
+  .activity-item { padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item p { font-size: 12.5px; color: var(--gray-700); line-height: 1.4; }
+  .activity-time { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+  .status-indicator { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .status-text { font-size: 12.5px; color: var(--blue); font-weight: 500; }
+
+  /* LOAN TABS */
+  .tab-group { display: flex; gap: 4px; }
+  .tab-btn { padding: 7px 16px; border-radius: 6px; border: none; font-family: var(--font); font-size: 13.5px; font-weight: 600; cursor: pointer; background: var(--gray-100); color: var(--gray-600); transition: all .15s; }
+  .tab-btn.active { background: var(--blue); color: var(--white); }
+  .overdue-red { color: var(--red); font-weight: 600; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .status-pill.active { background: #d1fae5; color: #065f46; }
+  .status-pill.active::before { background: #16a34a; }
+  .status-pill.returned { background: var(--green-light); color: var(--green); }
+  .status-pill.returned::before { background: var(--green); }
+  .status-pill.overdue { background: var(--red-light); color: var(--red); }
+  .status-pill.overdue::before { background: var(--red); }
+
+  .search-filter-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .search-filter-row .search-wrap { flex: 1; margin-bottom: 0; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .page.active { animation: fadeIn .2s ease; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: 12px; padding: 28px; width: 440px; max-width: 95vw; box-shadow: var(--shadow-md); }
+  .modal-title { font-size: 17px; font-weight: 700; color: var(--gray-900); margin-bottom: 18px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--gray-900); color: white; padding: 12px 20px; border-radius: 8px; font-size: 13.5px; font-weight: 500; z-index: 300; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error   { background: var(--red); }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 48px; color: var(--gray-400); font-size: 13px; }
+  .empty { text-align: center; padding: 48px; color: var(--gray-400); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">LibraryMS</div>
+      <div class="sidebar-sub"><span>Admin Portal</span><br>Main Branch</div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item" onclick="showPage('books')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Book Catalog
+      </button>
+      <button class="nav-item" onclick="showPage('members')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Member Directory
+      </button>
+      <button class="nav-item" onclick="showPage('borrow')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Borrow a Book
+      </button>
+      <button class="nav-item" onclick="showPage('loans')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Loan History
+      </button>
+      <button class="nav-item" onclick="showPage('settings')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2a10 10 0 1 0 0 20"/></svg>
+        Settings
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Support
+      </button>
+      <button class="nav-item danger">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <button class="topbar-icon">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="topbar-user">
+        <div class="avatar-sm">A</div>
+        Admin
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ████ PAGE: BOOKS ████ -->
+      <div class="page" id="page-books">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Books</div>
+            <div class="page-desc">Manage and organize your entire collection of literary assets.</div>
+          </div>
+          <button class="btn btn-primary" onclick="openBookModal()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add New Book
+          </button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div><div class="stat-label">Total Titles</div><div class="stat-value" id="stat-books">—</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="stat-label">Total Stock</div><div class="stat-value" id="stat-stock">—</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div><div class="stat-label">Out of Stock</div><div class="stat-value" id="stat-nostock">—</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="padding:16px;">
+            <div class="search-wrap" style="margin-bottom:0">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="books-search" placeholder="Search by title, author, or ID" oninput="debounce(()=>loadBooks(1), 400)()">
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Year</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody id="books-tbody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody>
+          </table>
+          <div class="table-footer">
+            <span class="table-info" id="books-info"></span>
+            <div class="pagination" id="books-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ████ PAGE: MEMBERS ████ -->
+      <div class="page" id="page-members">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Member Directory</div>
+            <div class="page-desc">Manage your library membership database.</div>
+          </div>
+          <button class="btn btn-primary" onclick="openMemberModal()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Register Member
+          </button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card" style="max-width:320px">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div><div class="stat-label">Total Members</div><div class="stat-value" id="stat-members">—</div></div>
+          </div>
+          <div class="stat-card" style="max-width:320px">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+            <div><div class="stat-label">Active Borrowers</div><div class="stat-value" id="stat-borrowers">—</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="padding:16px;">
+            <div class="search-filter-row">
+              <div class="search-wrap" style="margin-bottom:0">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="members-search" placeholder="Search by name, ID, or email..." oninput="debounce(()=>loadMembers(1), 400)()">
+              </div>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Member ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active Loans</th><th>Actions</th></tr></thead>
+            <tbody id="members-tbody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody>
+          </table>
+          <div class="table-footer">
+            <span class="table-info" id="members-info"></span>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" id="members-prev" onclick="membersPage > 1 && loadMembers(membersPage-1)">Previous</button>
+              <button class="btn btn-primary btn-sm" id="members-next" onclick="loadMembers(membersPage+1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ████ PAGE: BORROW ████ -->
+      <div class="page" id="page-borrow">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Borrow a Book</div>
+            <div class="page-desc">Process a new library loan by selecting a member and a catalog item.</div>
+          </div>
+        </div>
+        <div class="borrow-layout">
+          <div>
+            <div class="form-card">
+              <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text" id="borrow-status-text">Ready to process new loan</span>
+              </div>
+              <div class="form-card-title">Borrow a Book</div>
+              <div class="form-card-desc">Process a new library loan by selecting a member and a catalog item.</div>
+
+              <div class="form-group">
+                <label class="form-label">Select Member</label>
+                <select class="form-select" id="borrow-member">
+                  <option value="">— Loading members… —</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Select Book</label>
+                <select class="form-select" id="borrow-book" onchange="updateBookStock()">
+                  <option value="">— Loading books… —</option>
+                </select>
+                <div class="stock-hint" id="borrow-stock-hint"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Due Date</label>
+                <input class="form-input" type="date" id="borrow-due">
+                <div class="form-hint">Standard loan period is 14 days. Adjust if special permission is granted.</div>
+              </div>
+
+              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="processLoan()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Process Loan
+              </button>
+              <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="resetBorrowForm()">Cancel Transaction</button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="sidebar-card">
+              <div class="sidebar-card-title">
+                <svg width="14" height="14" fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Recent Activity
+              </div>
+              <div id="borrow-activity"><div class="loading">Loading…</div></div>
+            </div>
+            <div class="sidebar-card">
+              <div class="sidebar-card-title">
+                <svg width="14" height="14" fill="none" stroke="var(--gray-600)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Loan Guidelines
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);line-height:1.6">Ensure the member has no outstanding fines exceeding $5.00 before processing new transactions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ████ PAGE: LOANS ████ -->
+      <div class="page" id="page-loans">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Loan History</div>
+            <div class="page-desc">Track and manage all book circulations.</div>
+          </div>
+          <div class="tab-group">
+            <button class="tab-btn" onclick="setLoanTab('all',this)">All</button>
+            <button class="tab-btn active" onclick="setLoanTab('active',this)">Active</button>
+            <button class="tab-btn" onclick="setLoanTab('overdue',this)">Overdue</button>
+            <button class="tab-btn" onclick="setLoanTab('returned',this)">Returned</button>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+            <div><div class="stat-label">Total Loans</div><div class="stat-value" id="stat-total-loans">—</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div><div class="stat-label">Active</div><div class="stat-value" id="stat-active-loans">—</div><div class="stat-note">Currently in circulation</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div><div class="stat-label">Overdue</div><div class="stat-value" style="color:var(--red)" id="stat-overdue">—</div><div style="font-size:11.5px;color:var(--red);font-weight:600">Immediate action required</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg></div>
+            <div><div class="stat-label">Returns (Today)</div><div class="stat-value" id="stat-returns-today">—</div><div class="stat-note">Processed since morning</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="padding:16px;">
+            <div class="search-wrap" style="margin-bottom:0">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="loans-search" placeholder="Search by member, book, or loan ID…" oninput="debounce(()=>loadLoans(1), 400)()">
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Loan ID</th><th>Member Name</th><th>Book Title</th><th>Borrow Date</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="loans-tbody"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody>
+          </table>
+          <div class="table-footer">
+            <span class="table-info" id="loans-info"></span>
+            <div class="pagination" id="loans-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ████ PAGE: SETTINGS ████ -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Settings</div>
+            <div class="page-desc">Manage your library system preferences.</div>
+          </div>
+        </div>
+        <div class="card" style="padding:48px;text-align:center;color:var(--gray-400)">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block;opacity:.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          <div style="font-size:14px;font-weight:600;color:var(--gray-600)">Settings</div>
+          <div style="font-size:12.5px;margin-top:4px">Configuration options coming soon.</div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ── MODAL: ADD / EDIT BOOK ── -->
+<div class="modal-overlay" id="book-modal">
+  <div class="modal">
+    <div class="modal-title" id="book-modal-title">Add New Book</div>
+    <input type="hidden" id="book-id">
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-input" id="book-title" placeholder="Book title">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Author *</label>
+      <input class="form-input" id="book-author" placeholder="Author name">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Year</label>
+        <input class="form-input" id="book-year" type="number" placeholder="2024">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stock</label>
+        <input class="form-input" id="book-stock" type="number" value="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ISBN</label>
+      <input class="form-input" id="book-isbn" placeholder="978-…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('book-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()">Save Book</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: ADD / EDIT MEMBER ── -->
+<div class="modal-overlay" id="member-modal">
+  <div class="modal">
+    <div class="modal-title" id="member-modal-title">Register Member</div>
+    <input type="hidden" id="member-id">
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" id="member-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email *</label>
+      <input class="form-input" id="member-email" type="email" placeholder="email@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input class="form-input" id="member-phone" placeholder="(+62) 081-…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('member-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMember()">Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const API = "/api";
+
+// ─── UTILS ───────────────────────────────────────────────
+function debounce(fn, ms) {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+function showToast(msg, type="success") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+async function api(path, opts={}) {
+  const r = await fetch(API + path, {
+    headers: {"Content-Type":"application/json"},
+    ...opts
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+function initials(name) {
+  return name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase();
+}
+
+const AVATAR_COLORS = [
+  ["#dbeafe","#1d4ed8"],["#fce7f3","#9d174d"],["#d1fae5","#065f46"],
+  ["#ede9fe","#5b21b6"],["#fee2e2","#b91c1c"],["#fef3c7","#b45309"]
+];
+function avatarColor(id) { return AVATAR_COLORS[id % AVATAR_COLORS.length]; }
+
+function openModal(id) { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+// ─── NAVIGATION ──────────────────────────────────────────
+const PAGES = ["books","members","borrow","loans","settings"];
+let currentPage = "books";
+
+function showPage(name) {
+  PAGES.forEach(p => document.getElementById("page-"+p).classList.toggle("active", p===name));
+  document.querySelectorAll(".sidebar-nav .nav-item").forEach((btn, i) => {
+    btn.classList.toggle("active", PAGES[i]===name);
+  });
+  currentPage = name;
+  if (name==="books")   { loadStats(); loadBooks(1); }
+  if (name==="members") { loadStats(); loadMembers(1); }
+  if (name==="loans")   { loadStats(); loadLoans(1); }
+  if (name==="borrow")  { loadBorrowSelects(); loadActivity(); }
+}
+
+// ─── STATS ───────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const d = await api("/stats");
+    document.getElementById("stat-books").textContent       = d.books.toLocaleString();
+    document.getElementById("stat-stock").textContent       = d.total_stock.toLocaleString();
+    document.getElementById("stat-nostock").textContent     = d.out_of_stock.toLocaleString();
+    document.getElementById("stat-members").textContent     = d.members.toLocaleString();
+    document.getElementById("stat-borrowers").textContent   = d.active_borrowers.toLocaleString();
+    document.getElementById("stat-total-loans").textContent = d.total_loans.toLocaleString();
+    document.getElementById("stat-active-loans").textContent= d.active_loans.toLocaleString();
+    document.getElementById("stat-overdue").textContent     = d.overdue.toLocaleString();
+    document.getElementById("stat-returns-today").textContent = d.returns_today.toLocaleString();
+  } catch(e) { console.error(e); }
+}
+
+// ─── BOOKS ───────────────────────────────────────────────
+let booksPage = 1;
+
+async function loadBooks(page=1) {
+  booksPage = page;
+  const q   = document.getElementById("books-search").value;
+  const tbody = document.getElementById("books-tbody");
+  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
+  try {
+    const d = await api(`/books?page=${page}&per_page=8&q=${encodeURIComponent(q)}`);
+    if (!d.books.length) { tbody.innerHTML=`<tr><td colspan="6" class="empty">No books found.</td></tr>`; return; }
+    tbody.innerHTML = d.books.map(b => `
+      <tr>
+        <td class="id-cell">#B-${String(b.id).padStart(4,"0")}</td>
+        <td><strong>${b.title}</strong></td>
+        <td>${b.author}</td>
+        <td><span class="badge badge-year">${b.year||"—"}</span></td>
+        <td class="${b.stock===0?"stock-zero":"stock-ok"}">${b.stock}</td>
+        <td><div class="action-btns">
+          <button class="icon-btn" title="Edit" onclick='openBookModal(${JSON.stringify(b)})'>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn del" title="Delete" onclick="deleteBook(${b.id})">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div></td>
+      </tr>`).join("");
+
+    const total = d.total, perPage = d.per_page;
+    const start = (page-1)*perPage+1, end = Math.min(page*perPage, total);
+    document.getElementById("books-info").textContent = `Showing ${start}–${end} of ${total.toLocaleString()} books`;
+    renderPagination("books-pagination", page, Math.ceil(total/perPage), loadBooks);
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="6" class="empty">Error loading books.</td></tr>`; }
+}
+
+function openBookModal(book=null) {
+  document.getElementById("book-modal-title").textContent = book ? "Edit Book" : "Add New Book";
+  document.getElementById("book-id").value    = book?.id   || "";
+  document.getElementById("book-title").value = book?.title  || "";
+  document.getElementById("book-author").value= book?.author || "";
+  document.getElementById("book-year").value  = book?.year   || "";
+  document.getElementById("book-stock").value = book?.stock  ?? 0;
+  document.getElementById("book-isbn").value  = book?.isbn   || "";
+  openModal("book-modal");
+}
+
+async function saveBook() {
+  const id     = document.getElementById("book-id").value;
+  const payload = {
+    title:  document.getElementById("book-title").value.trim(),
+    author: document.getElementById("book-author").value.trim(),
+    year:   parseInt(document.getElementById("book-year").value)||null,
+    stock:  parseInt(document.getElementById("book-stock").value)||0,
+    isbn:   document.getElementById("book-isbn").value.trim(),
+  };
+  if (!payload.title || !payload.author) { showToast("Title and Author are required","error"); return; }
+  try {
+    if (id) {
+      await api(`/books/${id}`, {method:"PUT", body:JSON.stringify(payload)});
+      showToast("Book updated");
+    } else {
+      await api("/books", {method:"POST", body:JSON.stringify(payload)});
+      showToast("Book added");
+    }
+    closeModal("book-modal");
+    loadBooks(booksPage);
+    loadStats();
+  } catch(e) { showToast(e.message,"error"); }
+}
+
+async function deleteBook(id) {
+  if (!confirm("Delete this book?")) return;
+  try {
+    await api(`/books/${id}`, {method:"DELETE"});
+    showToast("Book deleted");
+    loadBooks(booksPage);
+    loadStats();
+  } catch(e) { showToast(e.message,"error"); }
+}
+
+// ─── MEMBERS ─────────────────────────────────────────────
+let membersPage = 1, membersTotalPages = 1;
+
+async function loadMembers(page=1) {
+  membersPage = page;
+  const q = document.getElementById("members-search").value;
+  const tbody = document.getElementById("members-tbody");
+  tbody.innerHTML = `<tr><td colspan="6" class="loading">Loading…</td></tr>`;
+  try {
+    const d = await api(`/members?page=${page}&per_page=8&q=${encodeURIComponent(q)}`);
+    membersTotalPages = Math.ceil(d.total / d.per_page);
+    if (!d.members.length) { tbody.innerHTML=`<tr><td colspan="6" class="empty">No members found.</td></tr>`; return; }
+    tbody.innerHTML = d.members.map(m => {
+      const [bg,fg] = avatarColor(m.id);
+      const lc = m.active_loans===0?"gray":m.active_loans>=4?"orange":"blue";
+      return `<tr>
+        <td class="id-cell">#M-${String(m.id).padStart(4,"0")}</td>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="member-avatar" style="background:${bg};color:${fg}">${initials(m.name)}</div>${m.name}
+        </div></td>
+        <td style="color:var(--gray-500)">${m.email}</td>
+        <td style="color:var(--gray-500)">${m.phone||"—"}</td>
+        <td><span class="loan-count ${lc}">${m.active_loans}</span></td>
+        <td><div class="action-btns">
+          <button class="icon-btn" onclick='openMemberModal(${JSON.stringify(m)})'>
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn del" onclick="deleteMember(${m.id})">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div></td>
+      </tr>`;
+    }).join("");
+    const start=(page-1)*d.per_page+1, end=Math.min(page*d.per_page, d.total);
+    document.getElementById("members-info").textContent = `Showing ${start}–${end} of ${d.total.toLocaleString()} members`;
+    document.getElementById("members-prev").disabled = page<=1;
+    document.getElementById("members-next").disabled = page>=membersTotalPages;
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="6" class="empty">Error loading members.</td></tr>`; }
+}
+
+function openMemberModal(m=null) {
+  document.getElementById("member-modal-title").textContent = m ? "Edit Member" : "Register Member";
+  document.getElementById("member-id").value    = m?.id    || "";
+  document.getElementById("member-name").value  = m?.name  || "";
+  document.getElementById("member-email").value = m?.email || "";
+  document.getElementById("member-phone").value = m?.phone || "";
+  openModal("member-modal");
+}
+
+async function saveMember() {
+  const id = document.getElementById("member-id").value;
+  const payload = {
+    name:  document.getElementById("member-name").value.trim(),
+    email: document.getElementById("member-email").value.trim(),
+    phone: document.getElementById("member-phone").value.trim(),
+  };
+  if (!payload.name||!payload.email) { showToast("Name and Email are required","error"); return; }
+  try {
+    if (id) {
+      await api(`/members/${id}`, {method:"PUT", body:JSON.stringify(payload)});
+      showToast("Member updated");
+    } else {
+      await api("/members", {method:"POST", body:JSON.stringify(payload)});
+      showToast("Member registered");
+    }
+    closeModal("member-modal");
+    loadMembers(membersPage);
+    loadStats();
+  } catch(e) { showToast(e.message,"error"); }
+}
+
+async function deleteMember(id) {
+  if (!confirm("Delete this member?")) return;
+  try {
+    await api(`/members/${id}`, {method:"DELETE"});
+    showToast("Member deleted");
+    loadMembers(membersPage);
+    loadStats();
+  } catch(e) { showToast(e.message,"error"); }
+}
+
+// ─── BORROW ──────────────────────────────────────────────
+async function loadBorrowSelects() {
+  try {
+    const [md, bd] = await Promise.all([
+      api("/members?per_page=200"),
+      api("/books?per_page=200")
+    ]);
+    document.getElementById("borrow-member").innerHTML =
+      `<option value="">— Select Member —</option>` +
+      md.members.map(m=>`<option value="${m.id}">${m.name} (#M-${String(m.id).padStart(4,"0")})</option>`).join("");
+    document.getElementById("borrow-book").innerHTML =
+      `<option value="">— Select Book —</option>` +
+      bd.books.map(b=>`<option value="${b.id}" data-stock="${b.stock}">${b.title} (Stock: ${b.stock})</option>`).join("");
+
+    // Default due = today + 14 days
+    const due = new Date(); due.setDate(due.getDate()+14);
+    document.getElementById("borrow-due").value = due.toISOString().split("T")[0];
+  } catch(e) { showToast("Failed to load form data","error"); }
+}
+
+function updateBookStock() {
+  const sel = document.getElementById("borrow-book");
+  const opt = sel.options[sel.selectedIndex];
+  const stock = opt?.dataset?.stock;
+  const hint  = document.getElementById("borrow-stock-hint");
+  if (stock !== undefined && stock !== "") {
+    hint.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      Current Stock: <strong>${stock}</strong> units`;
+    hint.style.color = parseInt(stock)===0 ? "var(--red)" : "var(--blue)";
+  } else hint.innerHTML = "";
+}
+
+async function processLoan() {
+  const member_id = document.getElementById("borrow-member").value;
+  const book_id   = document.getElementById("borrow-book").value;
+  const dueDateVal= document.getElementById("borrow-due").value; // YYYY-MM-DD
+  if (!member_id||!book_id||!dueDateVal) { showToast("Please fill all fields","error"); return; }
+  const [y,m,d] = dueDateVal.split("-");
+  const due_date = `${d}/${m}/${y}`;  // convert to dd/mm/yyyy
+  try {
+    await api("/loans", {method:"POST", body:JSON.stringify({member_id:parseInt(member_id), book_id:parseInt(book_id), due_date})});
+    showToast("Loan processed successfully!");
+    resetBorrowForm();
+    loadBorrowSelects();
+    loadActivity();
+    loadStats();
+  } catch(e) { showToast(e.message,"error"); }
+}
+
+function resetBorrowForm() {
+  document.getElementById("borrow-member").value = "";
+  document.getElementById("borrow-book").value   = "";
+  document.getElementById("borrow-stock-hint").innerHTML = "";
+  const due = new Date(); due.setDate(due.getDate()+14);
+  document.getElementById("borrow-due").value = due.toISOString().split("T")[0];
+}
+
+async function loadActivity() {
+  try {
+    const acts = await api("/activity");
+    const el = document.getElementById("borrow-activity");
+    el.innerHTML = acts.map(a => {
+      const action = a.status==="returned"
+        ? `<strong>${a.member_name}</strong> returned <strong>"${a.book_title}"</strong>`
+        : `<strong>${a.member_name}</strong> borrowed <strong>"${a.book_title}"</strong>`;
+      return `<div class="activity-item"><p>${action}</p><div class="activity-time">${a.borrow_date}</div></div>`;
+    }).join("") || `<div class="empty">No activity yet.</div>`;
+  } catch(e) { document.getElementById("borrow-activity").innerHTML = `<div class="empty">Error loading activity.</div>`; }
+}
+
+// ─── LOANS ───────────────────────────────────────────────
+let loansPage=1, currentLoanTab="active";
+
+function setLoanTab(tab, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  currentLoanTab = tab;
+  loadLoans(1);
+}
+
+async function loadLoans(page=1) {
+  loansPage = page;
+  const q = document.getElementById("loans-search").value;
+  const tbody = document.getElementById("loans-tbody");
+  tbody.innerHTML = `<tr><td colspan="7" class="loading">Loading…</td></tr>`;
+  try {
+    const d = await api(`/loans?page=${page}&per_page=8&status=${currentLoanTab}&q=${encodeURIComponent(q)}`);
+    if (!d.loans.length) { tbody.innerHTML=`<tr><td colspan="7" class="empty">No records found.</td></tr>`; return; }
+    tbody.innerHTML = d.loans.map(l => {
+      const [bg,fg] = avatarColor(l.member_id);
+      const statusCls = l.status==="active"?"active":l.status==="returned"?"returned":"overdue";
+      const dueCls    = l.status==="overdue" ? ' class="overdue-red"' : "";
+      const action    = l.status==="returned"
+        ? `<button class="icon-btn" title="View"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`
+        : `<button class="btn-return" onclick="returnLoan(${l.id})">Return</button>`;
+      return `<tr>
+        <td class="id-cell">#L-${String(l.id).padStart(4,"0")}</td>
+        <td><div style="display:flex;align-items:center;gap:8px">
+          <div class="member-avatar" style="background:${bg};color:${fg}">${initials(l.member_name)}</div>${l.member_name}
+        </div></td>
+        <td>${l.book_title}</td>
+        <td>${l.borrow_date}</td>
+        <td${dueCls}>${l.due_date}</td>
+        <td><span class="status-pill ${statusCls}">${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</span></td>
+        <td>${action}</td>
+      </tr>`;
+    }).join("");
+    const start=(page-1)*d.per_page+1, end=Math.min(page*d.per_page, d.total);
+    document.getElementById("loans-info").textContent = `Showing ${start}–${end} of ${d.total.toLocaleString()} records`;
+    renderPagination("loans-pagination", page, Math.ceil(d.total/d.per_page), loadLoans);
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="7" class="empty">Error loading loans.</td></tr>`; }
+}
+
+async function returnLoan(id) {
+  if (!confirm("Mark this loan as returned?")) return;
+  try {
+    await api(`/loans/${id}/return`, {method:"POST"});
+    showToast("Book returned successfully!");
+    loadLoans(loansPage);
+    loadStats();
+  } catch(e) { showToast(e.message,"error"); }
+}
+
+// ─── PAGINATION HELPER ───────────────────────────────────
+function renderPagination(containerId, page, totalPages, loadFn) {
+  const el = document.getElementById(containerId);
+  if (totalPages <= 1) { el.innerHTML=""; return; }
+  let html = `<button class="page-btn" ${page<=1?"disabled":""} onclick="(${loadFn.name})(${page-1})">‹</button>`;
+  const range = [];
+  for (let i=Math.max(1,page-1); i<=Math.min(totalPages,page+1); i++) range.push(i);
+  range.forEach(p => {
+    html += `<button class="page-btn ${p===page?"active":""}" onclick="(${loadFn.name})(${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" ${page>=totalPages?"disabled":""} onclick="(${loadFn.name})(${page+1})">›</button>`;
+  el.innerHTML = html;
+}
+
+// ─── INIT ────────────────────────────────────────────────
+showPage("books");
+</script>
+</body>
+</html>
