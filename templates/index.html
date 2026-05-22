@@ -1,573 +1,434 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LibraryMS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0f0e0d;
-    --surface: #1a1917;
-    --surface2: #232220;
-    --border: #2e2c2a;
-    --border2: #3d3b38;
-    --text: #f0ece5;
-    --muted: #8a8680;
-    --accent: #e8c97a;
-    --accent2: #c4a455;
-    --green: #6db98a;
-    --red: #d96b6b;
-    --blue: #6b9dd9;
-    --r: 8px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-
-  /* ── Navbar ── */
-  .navbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2rem; height: 58px;
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .navbar-brand { display: flex; align-items: center; gap: 10px; }
-  .navbar-brand .icon { font-size: 22px; }
-  .navbar-brand .wordmark { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: -.3px; color: var(--accent); }
-  .navbar-brand .sub { font-size: 11px; color: var(--muted); font-weight: 300; margin-top: 1px; }
-  .nav-stats { display: flex; gap: 1.5rem; }
-  .nav-stat { text-align: center; }
-  .nav-stat .num { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--accent); }
-  .nav-stat .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-
-  /* ── Layout ── */
-  .layout { display: flex; flex: 1; }
-
-  /* ── Sidebar ── */
-  .sidebar {
-    width: 210px; flex-shrink: 0; background: var(--surface);
-    border-right: 1px solid var(--border); padding: 1.5rem 0;
-    position: sticky; top: 58px; height: calc(100vh - 58px); overflow-y: auto;
-  }
-  .sidebar-section { margin-bottom: 1.5rem; }
-  .sidebar-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 0 1.25rem; margin-bottom: .5rem; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: .55rem 1.25rem;
-    cursor: pointer; font-size: 13.5px; font-weight: 400; color: var(--muted);
-    border-left: 2px solid transparent; transition: all .15s;
-  }
-  .nav-item:hover { color: var(--text); background: var(--surface2); }
-  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(232,201,122,.06); font-weight: 500; }
-  .nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .6; flex-shrink: 0; }
-  .nav-item .badge {
-    margin-left: auto; background: var(--accent); color: #1a1610;
-    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
-    padding: 1px 6px; border-radius: 10px; min-width: 20px; text-align: center;
-  }
-
-  /* ── Main ── */
-  .main { flex: 1; padding: 2rem 2.5rem; overflow-x: hidden; }
-
-  /* ── Page Header ── */
-  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; }
-  .page-title { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); }
-  .page-subtitle { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-
-  /* ── Buttons ── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: .45rem 1rem; border-radius: var(--r); border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all .15s; text-decoration: none;
-  }
-  .btn-primary { background: var(--accent); color: #1a1610; }
-  .btn-primary:hover { background: #f0d58a; }
-  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(217,107,107,.3); }
-  .btn-danger:hover { background: rgba(217,107,107,.1); }
-  .btn-sm { padding: .3rem .7rem; font-size: 12px; }
-  .btn-green { background: rgba(109,185,138,.15); color: var(--green); border: 1px solid rgba(109,185,138,.3); }
-  .btn-green:hover { background: rgba(109,185,138,.25); }
-
-  /* ── Search bar ── */
-  .search-bar { position: relative; margin-bottom: 1.25rem; }
-  .search-bar input {
-    width: 100%; padding: .6rem 1rem .6rem 2.5rem;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--r); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13.5px;
-    outline: none; transition: border .15s;
-  }
-  .search-bar input:focus { border-color: var(--accent2); }
-  .search-bar .icon { position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
-  .search-bar input::placeholder { color: var(--muted); }
-
-  /* ── Table ── */
-  .table-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  thead { background: var(--surface2); }
-  th { padding: .7rem 1rem; text-align: left; font-size: 11px; font-weight: 500; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-  td { padding: .7rem 1rem; border-top: 1px solid var(--border); vertical-align: middle; }
-  tr:hover td { background: var(--surface2); }
-  .td-actions { display: flex; gap: 6px; }
-  .mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
-
-  /* ── Badges ── */
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace; }
-  .badge-green { background: rgba(109,185,138,.15); color: var(--green); }
-  .badge-red { background: rgba(217,107,107,.15); color: var(--red); }
-  .badge-amber { background: rgba(232,201,122,.15); color: var(--accent); }
-  .badge-blue { background: rgba(107,157,217,.15); color: var(--blue); }
-
-  /* ── Empty state ── */
-  .empty { text-align: center; padding: 3rem; color: var(--muted); }
-  .empty .icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .4; }
-
-  /* ── Modal ── */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.7);
-    display: flex; align-items: center; justify-content: center; z-index: 200;
-    opacity: 0; pointer-events: none; transition: opacity .2s;
-  }
-  .overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 12px; width: 460px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
-    transform: translateY(16px); transition: transform .2s;
-  }
-  .overlay.open .modal { transform: translateY(0); }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-  .modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; }
-  .modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; line-height: 1; }
-  .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-  .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: .75rem; }
-
-  /* ── Form ── */
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-  .form-group input, .form-group select {
-    padding: .55rem .85rem; background: var(--surface2);
-    border: 1px solid var(--border2); border-radius: var(--r);
-    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
-    transition: border .15s;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--accent2); }
-  .form-group select option { background: var(--surface2); }
-
-  /* ── Toast ── */
-  .toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 300;
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--r); padding: .75rem 1.25rem;
-    font-size: 13.5px; display: flex; align-items: center; gap: 8px;
-    transform: translateY(20px); opacity: 0; transition: all .3s; pointer-events: none;
-    max-width: 320px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-left: 3px solid var(--green); }
-  .toast.error { border-left: 3px solid var(--red); }
-
-  /* ── Stats row ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.25rem; }
-  .stat-card .num { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--accent); }
-  .stat-card .lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LibraryMS – Admin Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+<div class="shell">
 
-<!-- ── Navbar ── -->
-<nav class="navbar">
-  <div class="navbar-brand">
-    <span class="icon">📚</span>
-    <div>
-      <div class="wordmark">LibraryMS</div>
-      <div class="sub">Library Management System</div>
-    </div>
-  </div>
-  <div class="nav-stats">
-    <div class="nav-stat"><div class="num" id="nav-books">–</div><div class="lbl">Books</div></div>
-    <div class="nav-stat"><div class="num" id="nav-members">–</div><div class="lbl">Members</div></div>
-    <div class="nav-stat"><div class="num" id="nav-active">–</div><div class="lbl">Active Loans</div></div>
-  </div>
-</nav>
-
-<div class="layout">
-  <!-- ── Sidebar ── -->
+  <!-- ████ SIDEBAR ████ -->
   <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Entities</div>
-      <div class="nav-item active" onclick="showPage('books')"><span class="dot"></span> Books <span class="badge" id="sb-books">0</span></div>
-      <div class="nav-item" onclick="showPage('members')"><span class="dot"></span> Members <span class="badge" id="sb-members">0</span></div>
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">LibraryMS</div>
+      <div class="sidebar-sub"><span>Admin Portal</span><br>Main Branch</div>
     </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">Loans</div>
-      <div class="nav-item" onclick="showPage('borrow')"><span class="dot"></span> Borrow Book</div>
-      <div class="nav-item" onclick="showPage('loans')"><span class="dot"></span> Active Loans <span class="badge" id="sb-active">0</span></div>
-      <div class="nav-item" onclick="showPage('history')"><span class="dot"></span> Loan History</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item" onclick="showPage('books')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Book Catalog
+      </button>
+      <button class="nav-item" onclick="showPage('members')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Member Directory
+      </button>
+      <button class="nav-item" onclick="showPage('borrow')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Borrow a Book
+      </button>
+      <button class="nav-item" onclick="showPage('loans')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Loan History
+      </button>
+      <button class="nav-item" onclick="showPage('team')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Our Team
+      </button>
+      <button class="nav-item" onclick="showPage('settings')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2a10 10 0 1 0 0 20"/></svg>
+        Settings
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Support
+      </button>
+      <button class="nav-item danger">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Out
+      </button>
     </div>
   </aside>
 
-  <!-- ── Main Content ── -->
-  <main class="main" id="main-content">
-    <!-- Pages injected by JS -->
-  </main>
-</div>
+  <!-- ████ MAIN ████ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="topbar-icon">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="topbar-user">
+        <div class="avatar-sm">A</div>
+        Admin
+      </div>
+    </header>
 
-<!-- ── Modal ── -->
-<div class="overlay" id="modal-overlay">
-  <div class="modal" id="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title">Modal</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="content">
+
+      <!-- ════════════════════════════════════════
+           PAGE: BOOKS
+      ════════════════════════════════════════ -->
+      <div class="page" id="page-books">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Books</div>
+            <div class="page-desc">Manage and organize your entire collection of literary assets.</div>
+          </div>
+          <button class="btn btn-primary" onclick="openBookModal()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add New Book
+          </button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div><div class="stat-label">Total Titles</div><div class="stat-value" id="stat-books">—</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="stat-label">Total Stock</div><div class="stat-value" id="stat-stock">—</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div><div class="stat-label">Out of Stock</div><div class="stat-value" id="stat-nostock">—</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="padding:16px;">
+            <div class="search-wrap" style="margin-bottom:0">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="books-search" placeholder="Search by title, author, or ID" oninput="debounce(()=>loadBooks(1), 400)()">
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>Author</th><th>Year</th><th>Stock</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="books-tbody">
+              <tr><td colspan="6" class="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span class="table-info" id="books-info"></span>
+            <div class="pagination" id="books-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           PAGE: MEMBERS
+      ════════════════════════════════════════ -->
+      <div class="page" id="page-members">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Member Directory</div>
+            <div class="page-desc">Manage your library membership database.</div>
+          </div>
+          <button class="btn btn-primary" onclick="openMemberModal()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Register Member
+          </button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card" style="max-width:320px">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div><div class="stat-label">Total Members</div><div class="stat-value" id="stat-members">—</div></div>
+          </div>
+          <div class="stat-card" style="max-width:320px">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+            <div><div class="stat-label">Active Borrowers</div><div class="stat-value" id="stat-borrowers">—</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="padding:16px;">
+            <div class="search-filter-row">
+              <div class="search-wrap" style="margin-bottom:0">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="members-search" placeholder="Search by name, ID, or email..." oninput="debounce(()=>loadMembers(1), 400)()">
+              </div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Member ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active Loans</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="members-tbody">
+              <tr><td colspan="6" class="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span class="table-info" id="members-info"></span>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" id="members-prev" onclick="membersPage > 1 && loadMembers(membersPage-1)">Previous</button>
+              <button class="btn btn-primary btn-sm" id="members-next" onclick="loadMembers(membersPage+1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           PAGE: BORROW
+      ════════════════════════════════════════ -->
+      <div class="page" id="page-borrow">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Borrow a Book</div>
+            <div class="page-desc">Process a new library loan by selecting a member and a catalog item.</div>
+          </div>
+        </div>
+        <div class="borrow-layout">
+          <div>
+            <div class="form-card">
+              <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text" id="borrow-status-text">Ready to process new loan</span>
+              </div>
+              <div class="form-card-title">Borrow a Book</div>
+              <div class="form-card-desc">Process a new library loan by selecting a member and a catalog item.</div>
+              <div class="form-group">
+                <label class="form-label">Select Member</label>
+                <select class="form-select" id="borrow-member">
+                  <option value="">— Loading members… —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Select Book</label>
+                <select class="form-select" id="borrow-book" onchange="updateBookStock()">
+                  <option value="">— Loading books… —</option>
+                </select>
+                <div class="stock-hint" id="borrow-stock-hint"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Due Date</label>
+                <input class="form-input" type="date" id="borrow-due">
+                <div class="form-hint">Standard loan period is 14 days. Adjust if special permission is granted.</div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="processLoan()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Process Loan
+              </button>
+              <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="resetBorrowForm()">Cancel Transaction</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="sidebar-card">
+              <div class="sidebar-card-title">
+                <svg width="14" height="14" fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Recent Activity
+              </div>
+              <div id="borrow-activity"><div class="loading">Loading…</div></div>
+            </div>
+            <div class="sidebar-card">
+              <div class="sidebar-card-title">
+                <svg width="14" height="14" fill="none" stroke="var(--gray-600)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Loan Guidelines
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);line-height:1.6">Ensure the member has no outstanding fines exceeding $5.00 before processing new transactions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           PAGE: LOANS
+      ════════════════════════════════════════ -->
+      <div class="page" id="page-loans">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Loan History</div>
+            <div class="page-desc">Track and manage all book circulations.</div>
+          </div>
+          <div class="tab-group">
+            <button class="tab-btn" onclick="setLoanTab('all',this)">All</button>
+            <button class="tab-btn active" onclick="setLoanTab('active',this)">Active</button>
+            <button class="tab-btn" onclick="setLoanTab('overdue',this)">Overdue</button>
+            <button class="tab-btn" onclick="setLoanTab('returned',this)">Returned</button>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+            <div><div class="stat-label">Total Loans</div><div class="stat-value" id="stat-total-loans">—</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div><div class="stat-label">Active</div><div class="stat-value" id="stat-active-loans">—</div><div class="stat-note">Currently in circulation</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div><div class="stat-label">Overdue</div><div class="stat-value" style="color:var(--red)" id="stat-overdue">—</div><div style="font-size:11.5px;color:var(--red);font-weight:600">Immediate action required</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg></div>
+            <div><div class="stat-label">Returns (Today)</div><div class="stat-value" id="stat-returns-today">—</div><div class="stat-note">Processed since morning</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="padding:16px;">
+            <div class="search-wrap" style="margin-bottom:0">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="loans-search" placeholder="Search by member, book, or loan ID…" oninput="debounce(()=>loadLoans(1), 400)()">
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Loan ID</th><th>Member Name</th><th>Book Title</th><th>Borrow Date</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="loans-tbody">
+              <tr><td colspan="7" class="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span class="table-info" id="loans-info"></span>
+            <div class="pagination" id="loans-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           PAGE: TEAM
+      ════════════════════════════════════════ -->
+      <div class="page" id="page-team">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Our Team</div>
+            <div class="page-desc">Anggota kelompok pengembang LibraryMS.</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:780px">
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a56db,#6366f1);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:white">DR</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--gray-900)">Dzaky Renaldy</div>
+              <div style="font-family:var(--mono);font-size:12.5px;color:var(--blue);font-weight:500;margin-top:4px">103012300407</div>
+            </div>
+            <div style="width:100%;border-top:1px solid var(--gray-100);padding-top:14px">
+              <span style="display:inline-block;background:var(--blue-light);color:var(--blue);font-size:11.5px;font-weight:600;padding:4px 12px;border-radius:20px">Awan Lesen</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:white">FF</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--gray-900)">Faza Farih Riyadi</div>
+              <div style="font-family:var(--mono);font-size:12.5px;color:var(--blue);font-weight:500;margin-top:4px">103012300027</div>
+            </div>
+            <div style="width:100%;border-top:1px solid var(--gray-100);padding-top:14px">
+              <span style="display:inline-block;background:var(--green-light);color:var(--green);font-size:11.5px;font-weight:600;padding:4px 12px;border-radius:20px">Awan Lesen</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:white">KK</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--gray-900)">Kennata Keanu Risang</div>
+              <div style="font-family:var(--mono);font-size:12.5px;color:var(--blue);font-weight:500;margin-top:4px">103012300119</div>
+            </div>
+            <div style="width:100%;border-top:1px solid var(--gray-100);padding-top:14px">
+              <span style="display:inline-block;background:#ede9fe;color:#5b21b6;font-size:11.5px;font-weight:600;padding:4px 12px;border-radius:20px">Awan Lesen</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:12px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:white">RA</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--gray-900)">Rafid Al Afif Khumaini</div>
+              <div style="font-family:var(--mono);font-size:12.5px;color:var(--blue);font-weight:500;margin-top:4px">103012300200</div>
+            </div>
+            <div style="width:100%;border-top:1px solid var(--gray-100);padding-top:14px">
+              <span style="display:inline-block;background:var(--orange-light);color:#92400e;font-size:11.5px;font-weight:600;padding:4px 12px;border-radius:20px">Awan Lesen</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           PAGE: SETTINGS
+      ════════════════════════════════════════ -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Settings</div>
+            <div class="page-desc">Manage your library system preferences.</div>
+          </div>
+        </div>
+        <div class="card" style="padding:48px;text-align:center;color:var(--gray-400)">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block;opacity:.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          <div style="font-size:14px;font-weight:600;color:var(--gray-600)">Settings</div>
+          <div style="font-size:12.5px;margin-top:4px">Configuration options coming soon.</div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ════════════════════════════════════════
+     MODAL: ADD / EDIT BOOK
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="book-modal">
+  <div class="modal">
+    <div class="modal-title" id="book-modal-title">Add New Book</div>
+    <input type="hidden" id="book-id">
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-input" id="book-title" placeholder="Book title">
     </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer" id="modal-footer"></div>
+    <div class="form-group">
+      <label class="form-label">Author *</label>
+      <input class="form-input" id="book-author" placeholder="Author name">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Year</label>
+        <input class="form-input" id="book-year" type="number" placeholder="2024">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stock</label>
+        <input class="form-input" id="book-stock" type="number" value="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ISBN</label>
+      <input class="form-input" id="book-isbn" placeholder="978-…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('book-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()">Save Book</button>
+    </div>
   </div>
 </div>
 
-<!-- ── Toast ── -->
+<!-- ════════════════════════════════════════
+     MODAL: ADD / EDIT MEMBER
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="member-modal">
+  <div class="modal">
+    <div class="modal-title" id="member-modal-title">Register Member</div>
+    <input type="hidden" id="member-id">
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" id="member-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email *</label>
+      <input class="form-input" id="member-email" type="email" placeholder="email@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input class="form-input" id="member-phone" placeholder="(+62) 081-…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('member-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMember()">Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
-// ── State ─────────────────────────────────────────────────────────────────
-let currentPage = 'books';
-let books = [], members = [], loans = [];
-
-// ── API helpers ───────────────────────────────────────────────────────────
-const api = async (url, opts = {}) => {
-  const res = await fetch(url, { headers: {'Content-Type': 'application/json'}, ...opts });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
-  return data;
-};
-
-// ── Toast ─────────────────────────────────────────────────────────────────
-function toast(msg, type = 'success') {
-  const el = document.getElementById('toast');
-  el.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
-  el.className = `toast show ${type}`;
-  setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-// ── Modal ─────────────────────────────────────────────────────────────────
-function openModal(title, bodyHTML, footerHTML) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = bodyHTML;
-  document.getElementById('modal-footer').innerHTML = footerHTML;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
-
-// ── Refresh counts ────────────────────────────────────────────────────────
-async function loadAll() {
-  [books, members, loans] = await Promise.all([
-    api('/api/books'), api('/api/members'), api('/api/loans')
-  ]);
-  const active = loans.filter(l => l.status === 'active').length;
-  document.getElementById('nav-books').textContent = books.length;
-  document.getElementById('nav-members').textContent = members.length;
-  document.getElementById('nav-active').textContent = active;
-  document.getElementById('sb-books').textContent = books.length;
-  document.getElementById('sb-members').textContent = members.length;
-  document.getElementById('sb-active').textContent = active;
-}
-
-// ── Page router ───────────────────────────────────────────────────────────
-function showPage(page) {
-  currentPage = page;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const map = { books: 0, members: 1, borrow: 2, loans: 3, history: 4 };
-  document.querySelectorAll('.nav-item')[map[page]]?.classList.add('active');
-  const pages = { books: renderBooks, members: renderMembers, borrow: renderBorrow, loans: renderLoans, history: renderHistory };
-  (pages[page] || renderBooks)();
-}
-
-// ── BOOKS PAGE ────────────────────────────────────────────────────────────
-function renderBooks(q = '') {
-  const filtered = books.filter(b =>
-    b.title.toLowerCase().includes(q.toLowerCase()) ||
-    b.author.toLowerCase().includes(q.toLowerCase()) ||
-    b.id.toLowerCase().includes(q.toLowerCase())
-  );
-  document.getElementById('main-content').innerHTML = `
-    <div class="page-header">
-      <div><div class="page-title">Books</div><div class="page-subtitle">Manage library book collection</div></div>
-      <button class="btn btn-primary" onclick="openBookModal()">+ Add Book</button>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="num">${books.length}</div><div class="lbl">Total titles</div></div>
-      <div class="stat-card"><div class="num">${books.reduce((s,b) => s+b.stock, 0)}</div><div class="lbl">Total stock</div></div>
-      <div class="stat-card"><div class="num">${books.filter(b => b.stock === 0).length}</div><div class="lbl">Out of stock</div></div>
-    </div>
-    <div class="search-bar">
-      <span class="icon">⌕</span>
-      <input type="text" placeholder="Search by title, author, or ID…" value="${q}" oninput="renderBooks(this.value)">
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Year</th><th>Stock</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${filtered.length ? filtered.map(b => `
-            <tr>
-              <td class="mono">${b.id}</td>
-              <td><strong style="font-weight:500">${b.title}</strong></td>
-              <td style="color:var(--muted)">${b.author}</td>
-              <td class="mono">${b.year}</td>
-              <td><span class="badge ${b.stock > 3 ? 'badge-green' : b.stock > 0 ? 'badge-amber' : 'badge-red'}">${b.stock}</span></td>
-              <td><div class="td-actions">
-                <button class="btn btn-ghost btn-sm" onclick="openBookModal('${b.id}')">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteBook('${b.id}')">Delete</button>
-              </div></td>
-            </tr>`).join('') : `<tr><td colspan="6"><div class="empty"><div class="icon">📖</div>No books found</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function openBookModal(id = null) {
-  const book = id ? books.find(b => b.id === id) : null;
-  openModal(
-    book ? `Edit Book — ${book.id}` : 'Add New Book',
-    `<div class="form-group"><label>Title *</label><input id="f-title" value="${book?.title || ''}" placeholder="Book title"></div>
-     <div class="form-group"><label>Author *</label><input id="f-author" value="${book?.author || ''}" placeholder="Author name"></div>
-     <div class="form-group"><label>Year</label><input id="f-year" type="number" value="${book?.year || new Date().getFullYear()}" min="1000" max="2099"></div>
-     <div class="form-group"><label>Stock</label><input id="f-stock" type="number" value="${book?.stock ?? 1}" min="0"></div>`,
-    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-primary" onclick="saveBook('${id || ''}')">Save Book</button>`
-  );
-}
-
-async function saveBook(id) {
-  const payload = {
-    title: document.getElementById('f-title').value.trim(),
-    author: document.getElementById('f-author').value.trim(),
-    year: +document.getElementById('f-year').value,
-    stock: +document.getElementById('f-stock').value,
-  };
-  if (!payload.title || !payload.author) { toast('Title and author are required', 'error'); return; }
-  try {
-    if (id) { await api(`/api/books/${id}`, { method: 'PUT', body: JSON.stringify(payload) }); toast('Book updated'); }
-    else { await api('/api/books', { method: 'POST', body: JSON.stringify(payload) }); toast('Book added'); }
-    closeModal(); await loadAll(); renderBooks();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function deleteBook(id) {
-  if (!confirm('Delete this book?')) return;
-  try {
-    await api(`/api/books/${id}`, { method: 'DELETE' });
-    toast('Book deleted'); await loadAll(); renderBooks();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-// ── MEMBERS PAGE ──────────────────────────────────────────────────────────
-function renderMembers(q = '') {
-  const filtered = members.filter(m =>
-    m.name.toLowerCase().includes(q.toLowerCase()) ||
-    m.email.toLowerCase().includes(q.toLowerCase()) ||
-    m.id.toLowerCase().includes(q.toLowerCase())
-  );
-  document.getElementById('main-content').innerHTML = `
-    <div class="page-header">
-      <div><div class="page-title">Members</div><div class="page-subtitle">Manage library members</div></div>
-      <button class="btn btn-primary" onclick="openMemberModal()">+ Add Member</button>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="num">${members.length}</div><div class="lbl">Total members</div></div>
-      <div class="stat-card"><div class="num">${[...new Set(loans.filter(l=>l.status==='active').map(l=>l.member_id))].length}</div><div class="lbl">Active borrowers</div></div>
-    </div>
-    <div class="search-bar">
-      <span class="icon">⌕</span>
-      <input type="text" placeholder="Search by name, email, or ID…" value="${q}" oninput="renderMembers(this.value)">
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active Loans</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${filtered.length ? filtered.map(m => {
-            const al = loans.filter(l => l.member_id === m.id && l.status === 'active').length;
-            return `<tr>
-              <td class="mono">${m.id}</td>
-              <td><strong style="font-weight:500">${m.name}</strong></td>
-              <td style="color:var(--muted)">${m.email}</td>
-              <td class="mono">${m.phone || '—'}</td>
-              <td>${al > 0 ? `<span class="badge badge-amber">${al}</span>` : '<span class="badge badge-green">0</span>'}</td>
-              <td><div class="td-actions">
-                <button class="btn btn-ghost btn-sm" onclick="openMemberModal('${m.id}')">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">Delete</button>
-              </div></td>
-            </tr>`;
-          }).join('') : `<tr><td colspan="6"><div class="empty"><div class="icon">👤</div>No members found</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function openMemberModal(id = null) {
-  const m = id ? members.find(x => x.id === id) : null;
-  openModal(
-    m ? `Edit Member — ${m.id}` : 'Add New Member',
-    `<div class="form-group"><label>Name *</label><input id="f-name" value="${m?.name || ''}" placeholder="Full name"></div>
-     <div class="form-group"><label>Email *</label><input id="f-email" type="email" value="${m?.email || ''}" placeholder="email@example.com"></div>
-     <div class="form-group"><label>Phone</label><input id="f-phone" value="${m?.phone || ''}" placeholder="08xxxxxxxxxx"></div>`,
-    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-primary" onclick="saveMember('${id || ''}')">Save Member</button>`
-  );
-}
-
-async function saveMember(id) {
-  const payload = {
-    name: document.getElementById('f-name').value.trim(),
-    email: document.getElementById('f-email').value.trim(),
-    phone: document.getElementById('f-phone').value.trim(),
-  };
-  if (!payload.name || !payload.email) { toast('Name and email are required', 'error'); return; }
-  try {
-    if (id) { await api(`/api/members/${id}`, { method: 'PUT', body: JSON.stringify(payload) }); toast('Member updated'); }
-    else { await api('/api/members', { method: 'POST', body: JSON.stringify(payload) }); toast('Member added'); }
-    closeModal(); await loadAll(); renderMembers();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function deleteMember(id) {
-  if (!confirm('Delete this member?')) return;
-  try {
-    await api(`/api/members/${id}`, { method: 'DELETE' });
-    toast('Member deleted'); await loadAll(); renderMembers();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-// ── BORROW PAGE ───────────────────────────────────────────────────────────
-function renderBorrow() {
-  const available = books.filter(b => b.stock > 0);
-  document.getElementById('main-content').innerHTML = `
-    <div class="page-header">
-      <div><div class="page-title">Borrow a Book</div><div class="page-subtitle">Create a new loan — links Member + Book</div></div>
-    </div>
-    <div style="max-width:500px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.75rem; display:flex; flex-direction:column; gap:1.25rem;">
-      <div class="form-group">
-        <label>Select Member *</label>
-        <select id="borrow-member">
-          <option value="">— choose member —</option>
-          ${members.map(m => `<option value="${m.id}">${m.name} (${m.id})</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Select Book *</label>
-        <select id="borrow-book">
-          <option value="">— choose book —</option>
-          ${available.map(b => `<option value="${b.id}">${b.title} — stock: ${b.stock}</option>`).join('')}
-        </select>
-      </div>
-      <div style="color:var(--muted); font-size:12.5px; padding:.75rem; background:var(--surface2); border-radius:var(--r); border:1px solid var(--border)">
-        📅 Borrow date will be set to today: <strong style="color:var(--accent)">${new Date().toLocaleDateString('id-ID', {year:'numeric',month:'long',day:'numeric'})}</strong>
-      </div>
-      ${available.length === 0 ? '<div style="color:var(--red); font-size:13px">⚠ No books currently available in stock.</div>' : ''}
-      <button class="btn btn-primary" style="align-self:flex-start" onclick="submitBorrow()">Create Loan</button>
-    </div>`;
-}
-
-async function submitBorrow() {
-  const book_id = document.getElementById('borrow-book').value;
-  const member_id = document.getElementById('borrow-member').value;
-  if (!book_id || !member_id) { toast('Please select both member and book', 'error'); return; }
-  try {
-    await api('/api/loans', { method: 'POST', body: JSON.stringify({ book_id, member_id }) });
-    toast('Loan created successfully!');
-    await loadAll(); renderLoans();
-    showPage('loans');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-// ── ACTIVE LOANS PAGE ─────────────────────────────────────────────────────
-function renderLoans() {
-  const active = loans.filter(l => l.status === 'active');
-  document.getElementById('main-content').innerHTML = `
-    <div class="page-header">
-      <div><div class="page-title">Active Loans</div><div class="page-subtitle">${active.length} book(s) currently borrowed</div></div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Loan ID</th><th>Member</th><th>Book</th><th>Borrowed</th><th>Days</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${active.length ? active.map(l => {
-            const days = Math.floor((new Date() - new Date(l.borrow_date)) / 86400000);
-            return `<tr>
-              <td class="mono">${l.id}</td>
-              <td><strong style="font-weight:500">${l.member_name}</strong><br><span class="mono" style="font-size:11px">${l.member_id}</span></td>
-              <td>${l.book_title}<br><span class="mono" style="font-size:11px">${l.book_id}</span></td>
-              <td class="mono">${l.borrow_date}</td>
-              <td><span class="badge ${days > 14 ? 'badge-red' : days > 7 ? 'badge-amber' : 'badge-green'}">${days}d</span></td>
-              <td><div class="td-actions">
-                <button class="btn btn-green btn-sm" onclick="returnLoan('${l.id}')">Return</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteLoan('${l.id}')">Delete</button>
-              </div></td>
-            </tr>`;
-          }).join('') : `<tr><td colspan="6"><div class="empty"><div class="icon">✅</div>No active loans — all books returned!</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-async function returnLoan(id) {
-  if (!confirm('Mark this loan as returned?')) return;
-  try {
-    await api(`/api/loans/${id}/return`, { method: 'PUT' });
-    toast('Book returned successfully!'); await loadAll(); renderLoans();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function deleteLoan(id) {
-  if (!confirm('Delete this loan record?')) return;
-  try {
-    await api(`/api/loans/${id}`, { method: 'DELETE' });
-    toast('Loan deleted'); await loadAll(); renderLoans();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-// ── HISTORY PAGE ──────────────────────────────────────────────────────────
-function renderHistory(filter = 'all') {
-  const filtered = filter === 'all' ? loans : loans.filter(l => l.status === filter);
-  document.getElementById('main-content').innerHTML = `
-    <div class="page-header">
-      <div><div class="page-title">Loan History</div><div class="page-subtitle">Complete record of all transactions</div></div>
-    </div>
-    <div style="display:flex; gap:.5rem; margin-bottom:1.25rem;">
-      ${['all','active','returned'].map(f => `
-        <button class="btn ${filter===f ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="renderHistory('${f}')">
-          ${f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-        </button>`).join('')}
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID</th><th>Member</th><th>Book</th><th>Borrow Date</th><th>Return Date</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${filtered.length ? filtered.map(l => `
-            <tr>
-              <td class="mono">${l.id}</td>
-              <td>${l.member_name}<br><span class="mono" style="font-size:11px">${l.member_id}</span></td>
-              <td>${l.book_title}<br><span class="mono" style="font-size:11px">${l.book_id}</span></td>
-              <td class="mono">${l.borrow_date}</td>
-              <td class="mono">${l.return_date || '—'}</td>
-              <td><span class="badge ${l.status === 'active' ? 'badge-amber' : 'badge-green'}">${l.status}</span></td>
-              <td><div class="td-actions">
-                ${l.status === 'active' ? `<button class="btn btn-green btn-sm" onclick="returnLoan('${l.id}'); setTimeout(()=>renderHistory('${filter}'),300)">Return</button>` : ''}
-                <button class="btn btn-danger btn-sm" onclick="deleteLoan('${l.id}'); setTimeout(()=>renderHistory('${filter}'),300)">Delete</button>
-              </div></td>
-            </tr>`).join('') : `<tr><td colspan="7"><div class="empty"><div class="icon">📋</div>No records found</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────
-(async () => { await loadAll(); renderBooks(); })();
-</script>
+<!-- Script dimuat di akhir body -->
+<script src="/static/js/main.js"></script>
 </body>
 </html>
